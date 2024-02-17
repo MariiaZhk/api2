@@ -8,7 +8,7 @@ export function getContactById(id) {
   return Contact.findById(id);
 }
 
-export async function removeContact(id) {
+export function removeContact(id) {
   return Contact.findByIdAndDelete(id);
 }
 
