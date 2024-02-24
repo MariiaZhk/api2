@@ -1,25 +1,25 @@
-import { Contact } from "../models/contact.js";
+import { Contact } from "../models/Contact.js";
 
-export function listContacts() {
+export const listContacts = () => {
   return Contact.find();
-}
+};
 
-export function getContactById(id) {
+export const getContactById = async (id) => {
   return Contact.findById(id);
-}
+};
 
-export function removeContact(id) {
+export const removeContact = async (id) => {
   return Contact.findByIdAndDelete(id);
-}
+};
 
-export function addContact(data) {
+export const addContact = async (data) => {
   return Contact.create(data);
-}
+};
 
-export function updateContactById(id, data) {
+export const updateContactById = async (id, data) => {
   return Contact.findByIdAndUpdate(id, data);
-}
+};
 
-export function updateStatus(id, body) {
+export const updateStatus = async (id, body) => {
   return Contact.findByIdAndUpdate(id, body);
-}
+};
