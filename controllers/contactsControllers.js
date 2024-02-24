@@ -1,22 +1,31 @@
 import HttpError from "../helpers/HttpError.js";
 import {
   addContact,
-  getContactById,
-  listContacts,
+  getContactByFilter,
+  getContactsCountByFilter,
+  // getContactById,
+  getContactsListByFilter,
+  // listContacts,
   removeContact,
+  removeContactByFilter,
   updateContactById,
   updateStatus,
 } from "../services/contactsServices.js";
 import { ctrlTryCatchWrapper } from "../helpers/ctrlTryCatchWrapper.js";
 
 export const getAllContacts = async (req, res) => {
-  const result = await listContacts();
-  res.status(200).json(result);
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+  const result = await getContactsListByFilter({ owner }, { skip, limit });
+  const total = await getContactsCountByFilter({ owner });
+  res.status(200).json({ total, result });
 };
 
 export const getOneContact = async (req, res) => {
   const { id } = req.params;
-  const result = await getContactById(id);
+  const { _id: owner } = req.user;
+  const result = await getContactByFilter({ _id: id, owner });
   if (!result) {
     throw HttpError(404, "Not Found");
   }
@@ -25,7 +34,8 @@ export const getOneContact = async (req, res) => {
 
 export const deleteContact = async (req, res) => {
   const { id } = req.params;
-  const result = await removeContact(id);
+  const { _id: owner } = req.user;
+  const result = await removeContactByFilter({ _id: id, owner });
   if (!result) {
     throw HttpError(404, `Not Found`);
   }
@@ -33,13 +43,15 @@ export const deleteContact = async (req, res) => {
 };
 
 export const createContact = async (req, res) => {
-  const result = await addContact(req.body);
+  const { _id: owner } = req.user;
+  const result = await addContact({ ...req.body, owner });
   res.status(201).json(result);
 };
 
 export const updateContact = async (req, res) => {
   const { id } = req.params;
-  const result = await updateContactById(id, req.body);
+  const { _id: owner } = req.user;
+  const result = await updateContactById({ _id: id, owner }, req.body);
   if (!result) {
     throw HttpError(404, `Not Found`);
   }
