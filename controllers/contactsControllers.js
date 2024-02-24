@@ -15,9 +15,13 @@ import { ctrlTryCatchWrapper } from "../helpers/ctrlTryCatchWrapper.js";
 
 export const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user;
-  const { page = 1, limit = 20 } = req.query;
+  const filter = { owner };
+  const { page = 1, limit = 20, favorite } = req.query;
   const skip = (page - 1) * limit;
-  const result = await getContactsListByFilter({ owner }, { skip, limit });
+  if (favorite) {
+    filter.favorite = favorite;
+  }
+  const result = await getContactsListByFilter(filter, { skip, limit });
   const total = await getContactsCountByFilter({ owner });
   res.status(200).json({ total, result });
 };

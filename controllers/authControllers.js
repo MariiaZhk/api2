@@ -69,9 +69,21 @@ const logout = async (req, res) => {
   });
 };
 
+const updateSubscription = async (req, res) => {
+  const { _id } = req.user;
+  const { subscription: newSubscription } = req.body;
+  const { email, subscription } = await userServices.updateSubscription(
+    _id,
+    newSubscription
+  );
+
+  res.json({ user: { email, subscription } });
+};
+
 export default {
   register: ctrlTryCatchWrapper(register),
   login: ctrlTryCatchWrapper(login),
   getCurrent: ctrlTryCatchWrapper(getCurrent),
   logout: ctrlTryCatchWrapper(logout),
+  updateSubscription: ctrlTryCatchWrapper(updateSubscription),
 };
