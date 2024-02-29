@@ -6,3 +6,6 @@ export const findUserById = (id) => User.findById(id);
 
 export const updateSubscription = (id, subscription) =>
   User.findByIdAndUpdate(id, { subscription });
+
+export const updateAvatar = (id, avatarURL) =>
+  User.findByIdAndUpdate(id, { avatarURL });

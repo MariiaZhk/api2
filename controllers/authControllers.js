@@ -1,11 +1,15 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import path from "path";
+import fs from "fs/promises";
 import * as userServices from "../services/userServices.js";
 import * as authServices from "../services/authServices.js";
 import { ctrlTryCatchWrapper } from "../helpers/ctrlTryCatchWrapper.js";
 import HttpError from "../helpers/HttpError.js";
 import "dotenv/config";
 
+const avatarsDir = path.resolve("public", "avatars");
 const { JWT_SECRET } = process.env;
 
 const register = async (req, res) => {
@@ -16,10 +20,12 @@ const register = async (req, res) => {
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
+  const avatarURL = gravatar.url(email);
 
   const newUser = await authServices.register({
     ...req.body,
     password: hashPassword,
+    avatarURL,
   });
   res.status(201).json({
     user: {
@@ -80,10 +86,25 @@ const updateSubscription = async (req, res) => {
   res.json({ user: { email, subscription } });
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id: owner } = req.user;
+  const { path: oldPath, filename } = req.file;
+  console.log(req.body);
+  console.log(req.file);
+  const newPath = path.join(avatarsDir, filename);
+  await fs.rename(oldPath, newPath);
+  // await fs.unlink(oldPath);
+  console.log(oldPath);
+  const avatarURL = path.join("avatars", filename);
+  await userServices.updateAvatar(owner, avatarURL);
+  res.status(200).json({ avatarURL });
+};
+
 export default {
   register: ctrlTryCatchWrapper(register),
   login: ctrlTryCatchWrapper(login),
   getCurrent: ctrlTryCatchWrapper(getCurrent),
   logout: ctrlTryCatchWrapper(logout),
   updateSubscription: ctrlTryCatchWrapper(updateSubscription),
+  updateAvatar: ctrlTryCatchWrapper(updateAvatar),
 };
