@@ -7,7 +7,9 @@ import * as userServices from "../services/userServices.js";
 import * as authServices from "../services/authServices.js";
 import { ctrlTryCatchWrapper } from "../helpers/ctrlTryCatchWrapper.js";
 import HttpError from "../helpers/HttpError.js";
+import Jimp from "jimp";
 import "dotenv/config";
+import { unlink } from "fs";
 
 const avatarsDir = path.resolve("public", "avatars");
 const { JWT_SECRET } = process.env;
@@ -31,6 +33,7 @@ const register = async (req, res) => {
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -49,7 +52,7 @@ const login = async (req, res) => {
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "72h" });
   await authServices.setToken(user._id, token);
 
-  res.status(201).json({
+  res.status(200).json({
     token,
     user: {
       email,
@@ -87,16 +90,20 @@ const updateSubscription = async (req, res) => {
 };
 
 const updateAvatar = async (req, res) => {
-  const { _id: owner } = req.user;
+  const { _id } = req.user;
   const { path: oldPath, filename } = req.file;
-  console.log(req.body);
-  console.log(req.file);
   const newPath = path.join(avatarsDir, filename);
-  await fs.rename(oldPath, newPath);
-  // await fs.unlink(oldPath);
-  console.log(oldPath);
+
+  await Jimp.read(oldPath).then((avatar) => {
+    avatar.resize(250, 250).write(newPath);
+  });
+
+  await fs.unlink(oldPath);
   const avatarURL = path.join("avatars", filename);
-  await userServices.updateAvatar(owner, avatarURL);
+  const result = await userServices.updateAvatar(_id, avatarURL);
+  if (!result) {
+    throw HttpError(401, "Not authorized");
+  }
   res.status(200).json({ avatarURL });
 };
 
