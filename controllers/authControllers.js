@@ -94,9 +94,14 @@ const updateAvatar = async (req, res) => {
   const { path: oldPath, filename } = req.file;
   const newPath = path.join(avatarsDir, filename);
 
-  await Jimp.read(oldPath).then((avatar) => {
-    avatar.resize(250, 250).write(newPath);
-  });
+  Jimp.read(oldPath)
+    .then((avatar) => {
+      return avatar.resize(250, 250).write(newPath);
+    })
+    .catch((error) => {
+      console.error("Error updating avatar", error);
+      res.status(500).json({ error: "Server error" });
+    });
 
   await fs.unlink(oldPath);
   const avatarURL = path.join("avatars", filename);
