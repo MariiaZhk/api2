@@ -2,7 +2,7 @@
   "name": "goit-node-rest-api",
   "type": "module",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --detectOpenHandles",
     "start": "node ./app.js",
     "dev": "nodemon ./app.js"
   },

@@ -96,14 +96,13 @@ const updateAvatar = async (req, res) => {
 
   Jimp.read(oldPath)
     .then((avatar) => {
-      return avatar.resize(250, 250).write(newPath);
+      avatar.resize(250, 250).write(newPath);
     })
     .catch((error) => {
       console.error("Error updating avatar", error);
-      res.status(500).json({ error: "Server error" });
     });
+  await fs.rm(oldPath);
 
-  await fs.unlink(oldPath);
   const avatarURL = path.join("avatars", filename);
   const result = await userServices.updateAvatar(_id, avatarURL);
   if (!result) {
